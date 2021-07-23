@@ -13,19 +13,17 @@ void DeleteCharFromArray(char* arr, unsigned int& Length, char Target)
 	}
 	x--;
 	if (bFound)
+	{
+		
 		if (x == Length)
-		{
-			Length--;
-			arr[Length] = 0;
-		}
+			arr[Length-1] = 0;
 		else
-		{
 			for (; x < Length; x++)
 				arr[x] = arr[x + 1];
-		}
+		Length--;
+	}
 
 }
-
 MineGrid::MineGrid(unsigned int ColumCounter, unsigned int RowCounter): ColCount(ColumCounter), RowCount(RowCounter)
 {
 	MeSize = ColumCounter * RowCounter;
@@ -44,161 +42,121 @@ MineGrid::~MineGrid()
 }
 void MineGrid::MakeTitle()
 {
-	unsigned int OutLenght = ColCount * 3 + 1, OutIndex = 0;
-	char* OutputLine = new char[OutLenght];
+	std::cout << "__";
 	for (unsigned int x = 0; x < ColCount; x++)
-	{
-		OutputLine[OutIndex++] = '|';
-		OutputLine[OutIndex++] = 'A' + x;
-		OutputLine[OutIndex++] = '|';
-	}
-
-	OutputLine[OutLenght - 1] = 0;
-	printf("%s%s\n", "__", OutputLine);
-	delete[] OutputLine;
+		printf("|%c|",'A'+x);
+	std::cout << std::endl;
 }
 void MineGrid::PrintRules()
 {
 	printf("In this game + is a bomb, # is a covered square.\nYou can select the square to be uncovered by entering the colum and row ID\nPlease enter the size of the grid you would like to unmine.\nColums and Rows: ");
 }
 
-void MineGrid::IncreaseL(unsigned int Index)
-{
-	GridMemoryValue[Index - 1]++;
-}
-void MineGrid::IncreaseR(unsigned int Index)
-{
-	GridMemoryValue[Index +1]++;
-}
-//Row Below Manipulation
-void MineGrid::IncreaseD(unsigned int Index)
-{
-	GridMemoryValue[Index + RowCount]++;
-}
-void MineGrid::IncreaseDL(unsigned int Index)
-{
-	GridMemoryValue[Index + RowCount-1]++;
-}
-void MineGrid::IncreaseDR(unsigned int Index)
-{
-	GridMemoryValue[Index + RowCount + 1]++;
-}
-//Row Above Manipulation
-void MineGrid::IncreaseU(unsigned int Index)
-{
-	GridMemoryValue[Index - RowCount]++;
-}
-void MineGrid::IncreaseUR(unsigned int Index)
-{
-	GridMemoryValue[Index - RowCount + 1]++;
-}
-void MineGrid::IncreaseUL(unsigned int Index)
-{
-	GridMemoryValue[Index - RowCount - 1]++;
-}
-
 void MineGrid::GenerateBombs()
 {
-	//unsigned int BomCount = MeSize * 0.25;
-	unsigned int BomCount = 1;
+#define DebugFix 1;
+#if DebugFix
+	//This seeds the bombs to a 1/8 Density of the grid size
+	unsigned int BombCount = (unsigned int)(MeSize * BombDensity);
+	//Bomblist is used to prevent bombs generating on the same spot
+	unsigned int* BombList = new unsigned int[BombCount];
+	unsigned int BLIndex = 0;
+	//List of effected Cells
+	
+#else
+	unsigned int BombCount = 1;
+#endif // 0
+	//Seeds Random
 	srand(time(NULL));
-	bool Top, Bot, Rig, Lef;
-	char TopArr[] = "123", BotArr[] = "876", LefArr[] = "";
-	for (unsigned int x = 0; x < BomCount; x++)
+	//The list of cells effect acording to active cell placement
+	char TopArr[] = "123", BotArr[] = "876", LefArr[] = "146",RigArr[] = "358";
+	unsigned int ActiveCell;
+	//Iterator to loop through the bomblist array
+	unsigned int iIter;
+	bool Found;
+	for (unsigned int x = 0; x < BombCount; x++)
 	{
-		unsigned int ActiveCell = rand() % MeSize;
+#if DebugFix
+//Yes I use GoTo and no I don't care This is used in a correct and simple way
+//This keeps generating bomb locations till it finds a spot that has not been used
+		char ArrEffected[] = "12354678";
+		unsigned int ArrEffLength = 8;
+		GenerateRandomAgain:
+		ActiveCell = rand() % MeSize;
+		Found = false;
+		iIter = 0;
+
+		while (!Found && iIter < BLIndex)//Check each Value for duplication
+			Found = BombList[iIter++] == ActiveCell;
+		if (Found)//Checks if the value is a dup
+			goto GenerateRandomAgain;
+		else//Adds new bomb Location
+			BombList[BLIndex++] = ActiveCell;
+#else
+		//Debug used to create static bomb spawns
+		unsigned int TestArray[] = {89,87,55,1 };
+		unsigned int ActiveCell = TestArray[x];
+#endif
 		//Assign the value 10 which indicates that there is a bomb placed
 		GridMemoryValue[ActiveCell] = 10;
 		ActiveCell++;
+		
 		//Checks if the effected cell is in the top row
-		Top = ActiveCell <= ColCount;
-		//Checks if effected cell is in the bottom row
-		Bot = MeSize - ColCount <= ActiveCell;
-		//Check if Cell is in left and right most colum
-		Lef = ActiveCell % ColCount == 0;
-		Rig = ActiveCell % ColCount == 1;
-		ActiveCell--;
-		char ArrEffected[] = "12354678";
-		if (Top)
+		if (ActiveCell <= ColCount)
 		{
-
+			for (unsigned int x = 0; x < 3; x++)
+				DeleteCharFromArray(ArrEffected, ArrEffLength,TopArr[x]);
 		}
-	//	if (Top)
-	//	{
-	//		if (Lef)
-	//		{
-	//			//One cell to the right
-	//			GridMemoryValue[ActiveCell + 1]++;
-	//			//One cell down to the right
-	//			GridMemoryValue[ActiveCell + RowCount + 1]++;
-	//			//One cell down
-	//			GridMemoryValue[ActiveCell + RowCount]++;
-	//		}
-	//		else  if (Rig)
-	//		{
-	//			//One Cell to left
-	//			GridMemoryValue[ActiveCell -1 ]++;
-	//			//One cell to the left and down
-	//			GridMemoryValue[ActiveCell + RowCount-2]++;
-	//			//One cell down
-	//			GridMemoryValue[ActiveCell + RowCount - 1]++;
-	//		}
-	//		else
-	//		{
-	//			//Cells right and left
-	//			GridMemoryValue[ActiveCell - 1]++;
-	//			GridMemoryValue[ActiveCell + 1]++;
-	//			//Cells right left and below
-	//			GridMemoryValue[ActiveCell + RowCount]++;
-	//			GridMemoryValue[ActiveCell + RowCount-1]++;
-	//			GridMemoryValue[ActiveCell + RowCount + 1]++;
-	//		}
-	//	}
-	//	else if (Bot)
-	//	{
-	//		if (Lef)
-	//		{
-	//			//One cell to the right
-	//			GridMemoryValue[ActiveCell + 1]++;
-	//			//One cell up to the right
-	//			GridMemoryValue[ActiveCell - RowCount]++;
-	//			//One cell up
-	//			GridMemoryValue[ActiveCell - RowCount - 1]++;
-	//		}
-	//		else  if (Rig)
-	//		{
-	//			//One Cell to left
-	//			GridMemoryValue[ActiveCell - 1]++;
-	//			//One cell to the left and up
-	//			GridMemoryValue[ActiveCell - RowCount - 2]++;
-	//			//One cell up
-	//			GridMemoryValue[ActiveCell - RowCount - 1]++;
-	//		}
-	//		else
-	//		{
-	//			//Cells right and left
-	//			GridMemoryValue[ActiveCell - 1]++;
-	//			GridMemoryValue[ActiveCell + 1]++;
-	//			//Cells right left and above
-	//			GridMemoryValue[ActiveCell - RowCount]++;
-	//			GridMemoryValue[ActiveCell - RowCount - 1]++;
-	//			GridMemoryValue[ActiveCell - RowCount - 2]++;
-	//		}
-	//	}
-	//	else 
-	//	{
-	//		GridMemoryValue[ActiveCell - 1 + RowCount]++;
-	//		GridMemoryValue[ActiveCell - 2 + RowCount]++;
-	//		GridMemoryValue[ActiveCell + 1 + RowCount]++;
-
-	//		GridMemoryValue[ActiveCell - 1]++;
-	//		GridMemoryValue[ActiveCell + 1]++;
-
-	//		GridMemoryValue[ActiveCell - 1 - RowCount]++;
-	//		GridMemoryValue[ActiveCell + 1 - RowCount]++;
-	//		GridMemoryValue[ActiveCell + 2 - RowCount]++;
-	//	}
+		//Checks if effected cell is in the bottom row
+		else if (MeSize - ColCount < ActiveCell)
+		{
+			for (unsigned int x = 0; x < 3; x++)
+				DeleteCharFromArray(ArrEffected, ArrEffLength, BotArr[x]);
+		}
+		
+		//Check if Cell is in left and right most colum
+		if (ActiveCell % ColCount == 0)
+		{
+			for (unsigned int x = 0; x < 3; x++)
+				DeleteCharFromArray(ArrEffected, ArrEffLength, RigArr[x]);
+		}
+		else if (ActiveCell % ColCount == 1)
+		{
+			for (unsigned int x = 0; x < 3; x++)
+				DeleteCharFromArray(ArrEffected, ArrEffLength, LefArr[x]);
+				
+		}
+		ActiveCell--;
+		
+		for (unsigned int x = 0;x < ArrEffLength; x++)
+		{//Executes for all cells that need to be effected
+			switch (ArrEffected[x])
+			{
+			case '1': GridMemoryValue[ActiveCell - RowCount - 1]++;
+				break;
+			case '2': GridMemoryValue[ActiveCell - RowCount]++;
+				break;
+			case '3': GridMemoryValue[ActiveCell - RowCount + 1]++;
+				break;
+			case '4': GridMemoryValue[ActiveCell - 1]++;
+				break;
+			case '5': GridMemoryValue[ActiveCell + 1]++;
+				break;
+			case '6': GridMemoryValue[ActiveCell + RowCount - 1]++;
+				break;
+			case '7': GridMemoryValue[ActiveCell + RowCount]++;
+				break;
+			case '8': GridMemoryValue[ActiveCell + RowCount + 1]++;
+				break;
+			default:
+				break;
+			}
+		}
 	}
+#if 0 //Debug used to check for the Overwriting bug
+	for (unsigned int x = 0; x < BombCount; x++)
+		std::cout << BombList[x] << std::endl;
+#endif
 }
 
 void MineGrid::DisplayGird()
@@ -224,27 +182,46 @@ void MineGrid::DisplayGird()
 	//Deletes allocated memory
 	delete[] OutputLine;
 }
-
+void MineGrid::PriorityConverter(char Value)
+{
+	const char* Color;
+	switch (Value)
+	{//Color to value Corrispondents 
+	case '1': Color = GREEN;
+		break;
+	case '2': Color = BLUE;
+		break;
+	case '3': Color = CYAN;
+		break;
+	case '4': Color = MAGENTA;
+		break;
+	case '5': Color = YELLOW;
+		break;
+	case '6': Color = RED;
+		break;
+	case '7': Color = RED;
+		break;
+	case '8': Color = RED;
+		break;
+	case '+': Color = RED;
+		break;
+	default: Color = WHITE;
+		break;
+	}
+	printf("|%s%c%s|", Color, Value, RESET);
+}
 void MineGrid::DisplayValue()
 {
-	//Creates output string size. +1 for null character termenation
-	unsigned int OutSize = ColCount * 3 + 1;
-	char* OutputLine = new char[OutSize];
-	unsigned int OutIndex;
-	//Loops through rows and then colums
+	//MakeTitle();
 	for (unsigned int x = 0; x < RowCount; x++)
 	{
-		OutIndex = 0;
+		printf("%-2d",x);
 		for (unsigned int y = 0; y < ColCount; y++)
 		{
-			OutputLine[OutIndex++] = '|';
-			OutputLine[OutIndex++] = ( (GridMemoryValue[x * ColCount + y] >= 9)?'+' : '0'+ GridMemoryValue[x * ColCount + y]);
-			OutputLine[OutIndex++] = '|';
+			PriorityConverter( ((GridMemoryValue[y+x*ColCount] > 9)? '+' :'0'+ GridMemoryValue[y + x * ColCount]));
 		}
-		OutputLine[OutSize - 1] = 0;
 		//prints compiled row
-		printf("%-2d%s\n", x, OutputLine);
+		std::cout << std::endl;
 	}
 	//Deletes allocated memory
-	delete[] OutputLine;
 }

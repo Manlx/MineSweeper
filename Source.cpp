@@ -29,7 +29,5 @@ int main()
 	LOG("Actual Value after bomb seed");
 	DisplayGrid.DisplayValue();
 #endif // 0
-
-	
 	return 0;
 }
