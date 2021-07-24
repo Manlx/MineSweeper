@@ -14,7 +14,6 @@ void DeleteCharFromArray(char* arr, unsigned int& Length, char Target)
 	x--;
 	if (bFound)
 	{
-		
 		if (x == Length)
 			arr[Length-1] = 0;
 		else
@@ -132,21 +131,21 @@ void MineGrid::GenerateBombs()
 		{//Executes for all cells that need to be effected
 			switch (ArrEffected[x])
 			{
-			case '1': GridMemoryValue[ActiveCell - RowCount - 1]++;
+			case '1': GridMemoryValue[ActiveCell - ColCount - 1]++;
 				break;
-			case '2': GridMemoryValue[ActiveCell - RowCount]++;
+			case '2': GridMemoryValue[ActiveCell - ColCount]++;
 				break;
-			case '3': GridMemoryValue[ActiveCell - RowCount + 1]++;
+			case '3': GridMemoryValue[ActiveCell - ColCount + 1]++;
 				break;
 			case '4': GridMemoryValue[ActiveCell - 1]++;
 				break;
 			case '5': GridMemoryValue[ActiveCell + 1]++;
 				break;
-			case '6': GridMemoryValue[ActiveCell + RowCount - 1]++;
+			case '6': GridMemoryValue[ActiveCell + ColCount - 1]++;
 				break;
-			case '7': GridMemoryValue[ActiveCell + RowCount]++;
+			case '7': GridMemoryValue[ActiveCell + ColCount]++;
 				break;
-			case '8': GridMemoryValue[ActiveCell + RowCount + 1]++;
+			case '8': GridMemoryValue[ActiveCell + ColCount + 1]++;
 				break;
 			default:
 				break;
@@ -158,29 +157,30 @@ void MineGrid::GenerateBombs()
 		std::cout << BombList[x] << std::endl;
 #endif
 }
-
-void MineGrid::DisplayGird()
+void MineGrid::GameOver(bool Success)
 {
-	//Creates output string size. +1 for null character termenation
-	unsigned int OutSize = ColCount * 3 + 1;
-	char* OutputLine = new char[OutSize];
-	unsigned int OutIndex;
+
+}
+void MineGrid::RevealCell(unsigned int uRow, char cCol)
+{
+	unsigned int uCol = cCol - 'A';
+	char NewValue = (GridMemoryValue[uRow * ColCount + uCol] > 8) ? '+' : '0' + GridMemoryValue[uRow * ColCount + uCol];
+	if (NewValue == '+')
+		GameOver(false);
+	else
+		GridMemoryDisplay[uRow * ColCount + uCol] =NewValue ;
+	DisplayGrid();
+}
+void MineGrid::DisplayGrid()
+{
 	//Loops through rows and then colums
 	for (unsigned int x = 0; x < RowCount; x++)
 	{
-		OutIndex = 0;
+		printf("%-2d",x);
 		for (unsigned int y = 0; y < ColCount; y++)
-		{
-			OutputLine[OutIndex++] = '|';
-			OutputLine[OutIndex++] = GridMemoryDisplay[x* ColCount +y];
-			OutputLine[OutIndex++] = '|';
-		}
-		OutputLine[OutSize - 1] = 0;
-		//prints compiled row
-		printf("%-2d%s\n",x,OutputLine);
+			PriorityConverter(GridMemoryDisplay[y + ColCount*x]);
+		std::cout << std::endl;
 	}
-	//Deletes allocated memory
-	delete[] OutputLine;
 }
 void MineGrid::PriorityConverter(char Value)
 {
@@ -212,16 +212,12 @@ void MineGrid::PriorityConverter(char Value)
 }
 void MineGrid::DisplayValue()
 {
-	//MakeTitle();
+	MakeTitle();
 	for (unsigned int x = 0; x < RowCount; x++)
 	{
 		printf("%-2d",x);
 		for (unsigned int y = 0; y < ColCount; y++)
-		{
 			PriorityConverter( ((GridMemoryValue[y+x*ColCount] > 9)? '+' :'0'+ GridMemoryValue[y + x * ColCount]));
-		}
-		//prints compiled row
 		std::cout << std::endl;
 	}
-	//Deletes allocated memory
 }

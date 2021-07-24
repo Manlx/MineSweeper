@@ -11,10 +11,12 @@ public:
 	//Bomb Density must be between 0 and 1;
 	double BombDensity = 0.125;
 	MineGrid(unsigned int ColumCounter = 0, unsigned int RowCounter = 0);
+	void RevealCell(unsigned int uRow, char cCol);
 	void MakeTitle();
-	void DisplayGird();
+	void DisplayGrid();
 	void GenerateBombs();
 	void DisplayValue();
+	void GameOver(bool Success);
 	static void PriorityConverter(char Value);
 	
 	~MineGrid();

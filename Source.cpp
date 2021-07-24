@@ -22,12 +22,18 @@ int main()
 
 	MineGrid DisplayGrid(Cols, Rows);
 	DisplayGrid.MakeTitle();
-	DisplayGrid.DisplayGird();
-	LOG("Actual Value");
-	DisplayGrid.DisplayValue();
+	DisplayGrid.DisplayGrid();
 	DisplayGrid.GenerateBombs();
 	LOG("Actual Value after bomb seed");
 	DisplayGrid.DisplayValue();
+	
+
+	unsigned int iRow;
+	char cCol;
+	std::cout << "Colum and Row: " << std::endl;
+	std::cin >> cCol;
+	std::cin >> iRow;
+	DisplayGrid.RevealCell(iRow,cCol);
 #endif // 0
 	return 0;
 }
