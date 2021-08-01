@@ -23,7 +23,7 @@ void DeleteCharFromArray(char* arr, unsigned int& Length, char Target)
 	}
 
 }
-MineGrid::MineGrid(unsigned int ColumCounter, unsigned int RowCounter): ColCount(ColumCounter), RowCount(RowCounter)
+MineGrid::MineGrid(unsigned int RowCounter = 0, unsigned int ColumCounter = 0) : ColCount(ColumCounter), RowCount(RowCounter)
 {
 	MeSize = ColumCounter * RowCounter;
 	GridMemoryDisplay = new char[MeSize];
@@ -48,7 +48,16 @@ void MineGrid::MakeTitle()
 }
 void MineGrid::PrintRules()
 {
-	printf("In this game + is a bomb, # is a covered square.\nYou can select the square to be uncovered by entering the colum and row ID\nPlease enter the size of the grid you would like to unmine.\nColums and Rows: ");
+	printf("In this game + is a bomb, # is a covered square.\nYou can select the square to be uncovered by entering the colum and row ID\nPlease enter the size of the grid you would like to unmine.\n");
+}
+void MineGrid::GetInput()
+{
+	printf("Colums and Rows:");
+}
+void MineGrid::Setup()
+{
+	PrintRules();
+	GetInput();
 }
 
 void MineGrid::GenerateBombs()
@@ -157,18 +166,30 @@ void MineGrid::GenerateBombs()
 		std::cout << BombList[x] << std::endl;
 #endif
 }
-void MineGrid::GameOver(bool Success)
+void MineGrid::GameOver()
 {
-
+	if (isGameOver)
+		printf("Game over you triggered a mine:\n");
+	else
+		printf("Well played you master of math you have done it\n");
+	DisplayValue();
 }
 void MineGrid::RevealCell(unsigned int uRow, char cCol)
 {
 	unsigned int uCol = cCol - 'A';
 	char NewValue = (GridMemoryValue[uRow * ColCount + uCol] > 8) ? '+' : '0' + GridMemoryValue[uRow * ColCount + uCol];
 	if (NewValue == '+')
-		GameOver(false);
+		isGameOver = true;
 	else
 		GridMemoryDisplay[uRow * ColCount + uCol] =NewValue ;
+	CompleteDisplay();
+}
+void MineGrid::CompleteDisplay()
+{
+	
+	printf("\033c");
+	PrintRules();
+	MakeTitle();
 	DisplayGrid();
 }
 void MineGrid::DisplayGrid()
@@ -215,6 +236,7 @@ void MineGrid::DisplayValue()
 	MakeTitle();
 	for (unsigned int x = 0; x < RowCount; x++)
 	{
+		//GitTest
 		printf("%-2d",x);
 		for (unsigned int y = 0; y < ColCount; y++)
 			PriorityConverter( ((GridMemoryValue[y+x*ColCount] > 9)? '+' :'0'+ GridMemoryValue[y + x * ColCount]));
